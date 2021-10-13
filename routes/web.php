@@ -14,4 +14,4 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::view('forgot_password', 'auth.passwords.reset', ['token' => request()->get('token')])->name('password.reset');
+Route::view('forgot_password', 'auth.passwords.reset', ['token' => request()->get('token'), 'email' => request()->get('email') ])->name('password.reset');

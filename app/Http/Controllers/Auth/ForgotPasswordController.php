@@ -12,9 +12,11 @@ class ForgotPasswordController extends Controller
     {
         $credentials = request()->validate(['email' => 'required|email']);
 
-        Password::sendResetLink($credentials);
+        $status = Password::sendResetLink($credentials);
 
-        return response()->json(["msg" => 'Reset password link sent on your email.']);
+        $message = $status === Password::RESET_LINK_SENT ? 'Reset password link sent on your email.' : 'It not has been posible send a recovery email. Please try again later.';
+
+        return response()->json(["msg" => $message]);
     }
 
     public function reset()
@@ -31,9 +33,11 @@ class ForgotPasswordController extends Controller
         });
 
         if ($reset_password_status == Password::INVALID_TOKEN) {
-            return "Este token ya ha expirado. Solicita un nuevo correo de recuperación";
+            return "No existe un token para este usuario o el token ya ha expirado. Solicita un nuevo correo de recuperación";
+        } else if ($reset_password_status == Password::PASSWORD_RESET) {
+            return "La contraseña ha sido cambiada. Ya puedes cerrar esta pestaña.";
+        } else {
+            return back()->withErrors(['email' => [__($reset_password_status)]]);
         }
-
-        return "La contraseña ha sido cambiada. Ya puedes cerrar esta pestaña.";
     }
 }
