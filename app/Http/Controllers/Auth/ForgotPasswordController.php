@@ -14,17 +14,28 @@ class ForgotPasswordController extends Controller
 
         $status = Password::sendResetLink($credentials);
 
-        $message = $status === Password::RESET_LINK_SENT ? 'Reset password link sent on your email.' : 'It not has been posible send a recovery email. Please try again later.';
+        $messages = [
+            Password::RESET_LINK_SENT => 'Se te ha enviado un correo para restablecer tu contraseña.',
+            Password::RESET_THROTTLED => 'Ya has solicitado previamente un correo de recuperación de contraseña.',
+            Password::INVALID_USER => 'No existe un usuario registrado con este correo.',
+        ];
 
-        return response()->json(["msg" => $message]);
+        $message = $messages[$status];
+
+        if ($status != Password::RESET_LINK_SENT) return abort(400, $message);
+
+        return response()->json(["message" => $message]);
     }
 
     public function reset()
     {
         $credentials = request()->validate([
-            'email' => 'required|email',
+            'email' => 'required|email|exists:users,email',
             'token' => 'required|string',
             'password' => 'required|string|confirmed'
+        ], [
+            'email.exists' => 'No existe un usuario registrado con este correo',
+            'password.confirmed' => 'Las contraseñas no coinciden'
         ]);
 
         $reset_password_status = Password::reset($credentials, function ($user, $password) {
@@ -32,12 +43,14 @@ class ForgotPasswordController extends Controller
             $user->save();
         });
 
-        if ($reset_password_status == Password::INVALID_TOKEN) {
-            return "No existe un token para este usuario o el token ya ha expirado. Solicita un nuevo correo de recuperación";
-        } else if ($reset_password_status == Password::PASSWORD_RESET) {
-            return "La contraseña ha sido cambiada. Ya puedes cerrar esta pestaña.";
-        } else {
-            return back()->withErrors(['email' => [__($reset_password_status)]]);
-        }
+        $messages = [
+            Password::INVALID_TOKEN => 'No existe un token para este usuario o el token ya ha expirado. Solicita un nuevo correo de recuperación.',
+            Password::PASSWORD_RESET => 'La contraseña ha sido cambiada. Ya puedes cerrar esta pestaña.',
+            Password::INVALID_USER => 'No existe un usuario registrado con este correo.',
+        ];
+
+        $message = $messages[$reset_password_status];
+
+        return $message;
     }
 }

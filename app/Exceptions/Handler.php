@@ -3,6 +3,9 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Validation\UnauthorizedException;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Auth\AuthenticationException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -36,6 +39,48 @@ class Handler extends ExceptionHandler
     {
         $this->reportable(function (Throwable $e) {
             //
+        });
+
+        $this->renderable(function (ValidationException $e, $request) {
+            if ($request->is('api/*')) {
+                $errors = $e->errors();
+
+                return response()->json([
+                    'error' => array_values($errors)[0][0],
+                    'data' => null,
+                ], 400);
+            }
+        });
+
+        $this->renderable(function (UnauthorizedException $e, $request) {
+            if ($request->is('api/*')) {
+
+                return response()->json([
+                    'error' => 'Acceso no autorizado',
+                    'data' => null,
+                ], 401);
+            }
+        });
+
+        $this->renderable(function (AuthenticationException $e, $request) {
+            if ($request->is('api/*')) {
+
+                return response()->json([
+                    'error' => 'No estás autenticado',
+                    'unauthenticated' => true,
+                    'data' => null,
+                ], 401);
+            }
+        });
+
+        $this->renderable(function (Throwable $e, $request) {
+            if ($request->is('api/*')) {
+
+                return response()->json([
+                    'error' => $e->getMessage(),
+                    'data' => null,
+                ], 500);
+            }
         });
     }
 }

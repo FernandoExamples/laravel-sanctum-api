@@ -29,7 +29,6 @@ Route::get('email/resend', [VerificationController::class, 'resend'])->name('ver
 
 //Reset password
 Route::post('password/email', [ForgotPasswordController::class, 'forgot']);
-Route::post('password/reset', [ForgotPasswordController::class, 'reset'])->name('password.update');
 
 //Rutas protegidas
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
