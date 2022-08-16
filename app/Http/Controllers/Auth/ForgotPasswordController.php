@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ForgotPasswordController extends Controller
 {
@@ -22,7 +24,7 @@ class ForgotPasswordController extends Controller
 
         $message = $messages[$status];
 
-        if ($status != Password::RESET_LINK_SENT) return abort(400, $message);
+        if ($status != Password::RESET_LINK_SENT) throw new BadRequestHttpException($message);
 
         return response()->json(["message" => $message]);
     }
@@ -33,9 +35,6 @@ class ForgotPasswordController extends Controller
             'email' => 'required|email|exists:users,email',
             'token' => 'required|string',
             'password' => 'required|string|confirmed'
-        ], [
-            'email.exists' => 'No existe un usuario registrado con este correo',
-            'password.confirmed' => 'Las contraseñas no coinciden'
         ]);
 
         $reset_password_status = Password::reset($credentials, function ($user, $password) {

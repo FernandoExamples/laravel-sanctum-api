@@ -5,13 +5,15 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 class VerificationController extends Controller
 {
     public function verify(Request $request, $id)
     {
         if (!$request->hasValidSignature()) {
-            return response()->json(["msg" => "Invalid/Expired url provided."], 401);
+            throw new UnauthorizedHttpException("La url proporcionada es inválida o ha expirado.");
         }
 
         $user = User::findOrFail($id);
@@ -26,11 +28,11 @@ class VerificationController extends Controller
     public function resend()
     {
         if (auth()->user()->hasVerifiedEmail()) {
-            return response()->json(["msg" => "Email already verified."], 400);
+            throw new BadRequestHttpException("Este email ya ha sido verificado");
         }
 
         auth()->user()->sendEmailVerificationNotification();
 
-        return response()->json(["msg" => "Email verification link sent on your email"]);
+        return response()->json(["message" => "Se ha enviado un correo de verificación a tu correo electrónico."]);
     }
 }

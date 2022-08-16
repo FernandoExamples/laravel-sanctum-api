@@ -17,18 +17,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-//auth
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-Route::get('/user', [AuthController::class, 'getUser'])->middleware('auth:sanctum');
+require __DIR__.'/auth.php';
 
-//email verification
-Route::get('email/verify/{id}', [VerificationController::class, 'verify'])->name('verification.verify');
-Route::get('email/resend', [VerificationController::class, 'resend'])->name('verification.resend')->middleware(['auth:sanctum']);
-
-//Reset password
-Route::post('password/email', [ForgotPasswordController::class, 'forgot']);
 
 //Rutas protegidas
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {

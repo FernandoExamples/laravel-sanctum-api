@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\File;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\File;
 |
 */
 
-Route::view('forgot_password', 'auth.passwords.reset', ['token' => request()->get('token'), 'email' => request()->get('email') ])->name('password.reset');
+Route::view('/forgot-password', 'auth.passwords.reset', ['token' => request()->get('token'), 'email' => request()->get('email') ])->name('password.reset');
 Route::post('/password/reset', [ForgotPasswordController::class, 'reset'])->name('password.update');
 
 Route::get('/', function () {
